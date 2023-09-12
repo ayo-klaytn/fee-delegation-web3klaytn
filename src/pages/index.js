@@ -92,33 +92,28 @@ export default function Home() {
       }
 
       console.log("minting certificate..")
-
-      // sender
-
-      const CONTRACT_ADDRESS = '0xcc18eC0261AADbe5fB5a7854449FC26b4F428653';
-      const CONTRACT_ABI = ["function setNumber(uint256 newNumber) public", "function increment() public"];
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-      const param = contract.interface.encodeFunctionData("setNumber", ["0x123"]); 
+      
+      const param = nftContract.interface.encodeFunctionData("mintNFT"); 
 
       let tx = {
           type: 0x31,
-          to: CONTRACT_ADDRESS,
+          to: contractAddress,
           value: 0,  
-          from: senderAddr,
+          from: senderAddress,
           input: param,
         }; 
 
-      tx = await senderWallet.populateTransaction(tx);
+      tx = await signerWallet.populateTransaction(tx);
       console.log(tx);
 
-      const senderTxHashRLP = await senderWallet.signTransaction(tx);
+      const senderTxHashRLP = await signerWallet.signTransaction(tx);
       console.log('senderTxHashRLP', senderTxHashRLP);
 
       // fee payer
-      const feePayerWallet = new Wallet(feePayerPriv, provider);
+      const feePayerWallet = new Wallet(feePayerPrivateKey, wallet.provider);
 
       tx = feePayerWallet.decodeTxFromRLP( senderTxHashRLP );
-      tx.feePayer = feePayerAddr;
+      tx.feePayer = feePayerAddress;
       console.log(tx);
 
       const sentTx = await feePayerWallet.sendTransactionAsFeePayer(tx);
